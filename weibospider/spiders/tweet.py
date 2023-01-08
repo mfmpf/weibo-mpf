@@ -65,7 +65,7 @@ class TweetSpider(Spider):
                 yield item
 
         user_id, page_num = response.meta['user_id'], response.meta['page_num']
-        if tweets and page_num < MAX_PAGE:
+        if tweets and page_num < int(MAX_PAGE):
             page_num += 1
             url = f"https://weibo.com/ajax/statuses/mymblog?uid={user_id}&page={page_num}"
             yield Request(url, callback=self.parse, meta={'user_id': user_id, 'page_num': page_num})

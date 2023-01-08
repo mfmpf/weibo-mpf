@@ -10,7 +10,8 @@ import json
 from scrapy import Spider
 from scrapy.http import Request
 from spiders.common import parse_tweet_info
-USERID = os.getenv('WEIBO_USER')
+USERID   = os.getenv('WEIBO_USER')
+MAX_PAGE = os.getenv('MAX_PAGE')
 
 
 
@@ -63,8 +64,8 @@ class TweetSpider(Spider):
             else:
                 yield item
 
-        if tweets:
-            user_id, page_num = response.meta['user_id'], response.meta['page_num']
+        user_id, page_num = response.meta['user_id'], response.meta['page_num']
+        if tweets and page_num < MAX_PAGE:
             page_num += 1
             url = f"https://weibo.com/ajax/statuses/mymblog?uid={user_id}&page={page_num}"
             yield Request(url, callback=self.parse, meta={'user_id': user_id, 'page_num': page_num})

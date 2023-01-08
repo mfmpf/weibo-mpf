@@ -89,28 +89,30 @@ def tweet_to_markdown(tweet):
         pic_url = pic_cdn_url_base.format(pic_id=pic_id,owner_repository=GITHUB_ACTION_REPOSITORY)
         pic_original_url = pic_original_cdn_url_base.format(pic_id=pic_id,owner_repository=GITHUB_ACTION_REPOSITORY)
         pics_content += pics_content_base.format(pic_url=pic_url, pic_original_url=pic_original_url, div_id=div_id)
-    return tweet_content+pics_div.format(pics_content=pics_content,div_id=div_id)
+    if tweet["pic_num"] == 0:
+        return tweet_content
+    else :
+        return tweet_content+pics_div.format(pics_content=pics_content,div_id=div_id)
 
 
 # 数据库中的
 all_tweets = r.smembers(redis_weibo_user_tweets_key.format(userid=USERID))
 def tweet_to_redis(tweet):
     print("从json到数据库")
-    # 避免重复下载
+    print("保存微博 ",tweet["mblogid"])
+    redis_key_1 = redis_weibo_user_tweets_key.format(userid=USERID)
+    redis_key_2 = redis_weibo_tweet_key.format(mblogid=tweet["mblogid"])
+    redis_key_3 = redis_weibo_tweet_markdown_key.format(mblogid=tweet["mblogid"])
+    r.sadd(redis_key_1, tweet["mblogid"])                            # 所有mblogid的集合
+    r.set(redis_key_2, json.dumps(tweet))                            # 每个mblogid对应的文本，可解析为json
+    r.set(redis_key_3, tweet_to_markdown(tweet))                     # 每个mblogid对应的文本，可解析为json
+    # 如果含有转发的微博
+    if 'retweeted' in tweet:
+        retweet_mblogid = tweet['retweeted']['mblogid']
+        redis_key_3 = redis_weibo_tweet_markdown_key.format(mblogid=retweet_mblogid)
+        r.set(redis_key_3, tweet_to_markdown(tweet['retweeted']))
+    # 避免重复下载照片
     if tweet["mblogid"].encode('utf-8') not in all_tweets:
-        print("保存微博 ",tweet["mblogid"])
-        redis_key_1 = redis_weibo_user_tweets_key.format(userid=USERID)
-        redis_key_2 = redis_weibo_tweet_key.format(mblogid=tweet["mblogid"])
-        redis_key_3 = redis_weibo_tweet_markdown_key.format(mblogid=tweet["mblogid"])
-        r.sadd(redis_key_1, tweet["mblogid"])                            # 所有mblogid的集合
-        r.set(redis_key_2, json.dumps(tweet))                            # 每个mblogid对应的文本，可解析为json
-        r.set(redis_key_3, tweet_to_markdown(tweet))                     # 每个mblogid对应的文本，可解析为json
-        # 如果含有转发的微博
-        if 'retweeted' in tweet:
-            retweet_mblogid = tweet['retweeted']['mblogid']
-            redis_key_3 = redis_weibo_tweet_markdown_key.format(mblogid=retweet_mblogid)
-            r.set(redis_key_3, tweet_to_markdown(tweet['retweeted']))
-        # 下载照片
         for pic_id in tweet["pic_urls"]:
             download_pics(pic_id)
         if 'retweeted' in tweet:

@@ -4,7 +4,7 @@ name: Collect tweets on weibo
 env:
   WEIBO_USER: 5336841337
   OWNER_REPO: ${{ github.repository }}
-  MAX_PAGE: 20
+  MAX_PAGE: 25
 
 on:
   push:

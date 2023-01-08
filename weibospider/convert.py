@@ -89,7 +89,10 @@ def tweet_to_markdown(tweet):
         pic_url = pic_cdn_url_base.format(pic_id=pic_id,owner_repository=GITHUB_ACTION_REPOSITORY)
         pic_original_url = pic_original_cdn_url_base.format(pic_id=pic_id,owner_repository=GITHUB_ACTION_REPOSITORY)
         pics_content += pics_content_base.format(pic_url=pic_url, pic_original_url=pic_original_url, div_id=div_id)
-    return tweet_content+pics_div.format(pics_content=pics_content,div_id=div_id)
+    if tweet["pic_num"] == 0:
+        return tweet_content
+    else :
+        return tweet_content+pics_div.format(pics_content=pics_content,div_id=div_id)
 
 
 # 数据库中的

@@ -73,7 +73,7 @@ def tweet_to_markdown(tweet):
     将微博转换为markdown格式的文档
     """
     pics_div = """
-    <div id=\"{div_id:s}\" class=\"justified-gallery\">
+    <div id=\"{div_id:s}\" class=\"justified-gallery gallery-weibo\">
         {pics_content:s}
     </div>
     """
